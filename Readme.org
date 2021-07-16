@@ -1,12 +1,22 @@
-#+TITLE: cookie-cutter
+#+TITLE: ccp
 
 #+PROPERTY: LOGGING nil
 
 # Note: This readme works with the org-make-toc <https://github.com/alphapapa/org-make-toc> package, which automatically updates the table of contents.
 
-[[https://melpa.org/#/cookie-cutter][file:https://melpa.org/packages/cookie-cutter-badge.svg]] [[https://stable.melpa.org/#/cookie-cutter][file:https://stable.melpa.org/packages/cookie-cutter-badge.svg]]
+[[https://melpa.org/#/ccp][file:https://melpa.org/packages/ccp-badge.svg]] [[https://stable.melpa.org/#/ccp][file:https://stable.melpa.org/packages/ccp-badge.svg]]
 
-This is my package.  It is nice.  You should try it.
+ccp - Cookie Cutter Projects. Framework to define and use automated code project templates. The idea is to use easily defined hydras to make project selections and then ccp will do all the initial steps normally done when starting a coding project. Includes:
+
+- create directory in the appropriate (pre-defined) filesystem location
+- using other templating tools, ie. python cookie-cutter, emacs auto templates, etc
+- writing initial boilerplate code
+- initialize git
+- select prepackaged .gitignore entries
+- opitonally input remotes information
+- create initial git commit
+
+ccp is meant to be easily customizable so that you can add additional automation as you progress your coding habituation. 
 
 * Screenshots
 
@@ -46,7 +56,7 @@ If you installed from MELPA, you're done.  Just run one of the commands below.
   Then put this file in your load-path, and put this in your init file:
 
   #+BEGIN_SRC elisp
-(require 'cookie-cutter)
+(require 'ccp)
   #+END_SRC
 
 * Usage
@@ -56,11 +66,11 @@ If you installed from MELPA, you're done.  Just run one of the commands below.
 
   Run one of these commands:
 
-  + =cookie-cutter-command=: Frobnicate the flange.
+  + =ccp-command=: Frobnicate the flange.
 
 ** Tips
 
-+ You can customize settings in the =cookie-cutter= group.
++ You can customize settings in the =ccp= group.
 
 * Changelog
 :PROPERTIES:
@@ -70,10 +80,10 @@ If you installed from MELPA, you're done.  Just run one of the commands below.
 ** 1.1.0
 
 *Additions*
-+  Add command =cookie-cutter-debarnacle= to de-barnacle the hull.
++  Add command =ccp-debarnacle= to de-barnacle the hull.
 
 *Changes*
-+ Command =cookie-cutter-anchor= now takes an argument, =weigh= or =let-go=.
++ Command =ccp-anchor= now takes an argument, =weigh= or =let-go=.
 
 *Internal*
 +  Rewrote input parsing.
@@ -82,7 +92,7 @@ If you installed from MELPA, you're done.  Just run one of the commands below.
 ** 1.0.1
 
 *Fixes*
-+  Ensure anchor is secure before returning from =cookie-cutter-anchor=.
++  Ensure anchor is secure before returning from =ccp-anchor=.
 
 ** 1.0.0
 

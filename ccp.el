@@ -1,9 +1,9 @@
-;;; org-projects.el --- Cookie cutter for code projects   -*- lexical-binding: t; -*-
+;;; ccp.el --- Cookie Cutter Projects   -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021  Willy Rempel
 
 ;; Author: First Last <willy.rempel@gmail.com>
-;; URL: https://example.com/org-projects.el
+;; URL: https://example.com/ccp.el
 ;; Version: 0.1-pre
 ;; Package-Requires: ((emacs "25.2"))
 ;; Keywords: convenience, tools,
@@ -43,17 +43,17 @@
 ;; Then put this file in your load-path, and put this in your init
 ;; file:
 
-;; (require 'org-projects)
+;; (require 'ccp)
 
 ;;;; Usage
 
 ;; Run one of these commands:
 
-;; `org-projects-command': Frobnicate the flange.
+;; `ccp-command': Frobnicate the flange.
 
 ;;;; Tips
 
-;; + You can customize settings in the `org-projects' group.
+;; + You can customize settings in the `ccp' group.
 
 ;;;; Credits
 
@@ -74,17 +74,17 @@
 
 ;;;; Customization
 
-;; (defgroup org-projects nil
-;;   "Settings for `org-projects'."
-;;   :link '(url-link "https://example.com/org-projects.el"))
+;; (defgroup ccp nil
+;;   "Settings for `ccp'."
+;;   :link '(url-link "https://example.com/ccp.el"))
 
-;; (defcustom org-projects-something nil
+;; (defcustom ccp-something nil
 ;;   "This setting does something."
 ;;   :type 'something)
 
 ;;;; Variables
 
-;; (defvar org-projects-var nil
+;; (defvar ccp-var nil
 ;;   "A variable.")
 
 ;;;;; Keymaps
@@ -92,13 +92,13 @@
 ;; This technique makes it easier and less verbose to define keymaps
 ;; that have many bindings.
 
-;; (defvar org-projects-map
+;; (defvar ccp-map
 ;;   ;; This makes it easy and much less verbose to define keys
-;;   (let ((map (make-sparse-keymap "org-projects map"))
+;;   (let ((map (make-sparse-keymap "ccp map"))
 ;;         (maps (list
 ;;                ;; Mappings go here, e.g.:
-;;                "RET" #'org-projects-RET-command
-;;                [remap search-forward] #'org-projects-search-forward
+;;                "RET" #'ccp-RET-command
+;;                [remap search-forward] #'ccp-search-forward
 ;;                )))
 ;;     (cl-loop for (key fn) on maps by #'cddr
 ;;              do (progn
@@ -110,17 +110,17 @@
 ;;;; Commands
 
 ;;;###autoload
-(defun org-projects-command (args)
+(defun ccp-command (args)
   ""
   (interactive)
   ;; make selections
-  (org-projects-select-name)
-  (org-projects-select-category)
-  (org-projects-select-type)
+  (ccp-select-name)
+  (ccp-select-category)
+  (ccp-select-type)
   ;; build
-  (org-projects-setup-git)
-  (org-projects-insert-templates)
-  (org-projects-init-commit)
+  (ccp-setup-git)
+  (ccp-insert-templates)
+  (ccp-init-commit)
   )
 
 (require 'emr)
@@ -132,7 +132,7 @@
 ;;;;; Selections
 ;;;;; Hydras
 
-(defhydra org-projects-main-hydra (:foreign-keys warn :exit t :hint nil)
+(defhydra ccp-main-hydra (:foreign-keys warn :exit t :hint nil)
   "
 Main menu
 
@@ -193,7 +193,7 @@ _m_: Math rendering
 
 ;;;;; selection fns
 
-(defun org-projects--string-input (prompt)
+(defun ccp--string-input (prompt)
   "Get a string input from the user, make sure it is alphanumeric and
 not empty."
   (when (stringp prompt)
@@ -204,6 +204,6 @@ not empty."
 
 ;;;; Footer
 
-(provide 'org-projects)
+(provide 'ccp)
 
-;;; org-projects.el ends here
+;;; ccp.el ends here
