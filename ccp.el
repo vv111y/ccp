@@ -71,6 +71,7 @@
 ;; (require 'foo)
 (require 'ido)
 (require 's)
+(require 'f)
 
 ;;;; Customization
 
@@ -86,6 +87,31 @@
 
 ;; (defvar ccp-var nil
 ;;   "A variable.")
+
+(defvar ccp-root-dir nil "ccp directory.")
+
+(defvar ccp-gitignore-repo nil "gitignore templates directory.")
+
+(defvar ccp-gitignores-table nil "gitignore map filename to full path.")
+
+(setq ccp-root-dir (file-name-directory (symbol-file 'ccp-root-dir)))
+
+(let ((gidir (concat ccp-root-dir "gitignore")))
+  (if (f-dir? gidir)
+      (progn (setq ccp-gitignore-repo gidir)
+             (setq ccp-gitignore-templates-paths
+                   (directory-files-recursively gidir ".gitignore" nil t))
+             (setq ccp-gitignore-templates
+                   (mapcar #'(lambda (f) (when (f-file? f)
+                                           (f-filename f)))
+                           ccp-gitignore-templates-paths)))))
+
+(progn
+  (setq ccp-gitignores-table (make-hash-table :test 'equal))
+  (cl-mapcar #'(lambda (f path) (puthash f path ccp-gitignores-table))
+           ccp-gitignore-templates ccp-gitignore-templates-paths))
+
+
 
 ;;;;; Keymaps
 
@@ -110,7 +136,7 @@
 ;;;; Commands
 
 ;;;###autoload
-(defun ccp-command (args)
+(defun ccp-new-project (args)
   ""
   (interactive)
   ;; make selections
@@ -123,11 +149,39 @@
   (ccp-init-commit)
   )
 
-(require 'emr)
+(defun ccp-select-gitignore ()
+  (interactive)
+  (helm :buffer "ccp gitignore"
+        :sources
+        (helm-build-sync-source "ccp-gitignores"
+          :candidates (hash-table-keys ccp-gitignores-table)
+          :action
+          (lambda (c)
+            (ccp--merge-files "test.txt"
+                              (mapcar (lambda (el) (gethash el ccp-gitignores-table))
+                                      (helm-marked-candidates)))))))
+
+;; (mapcar
+;;  #'(lambda (el) (gethash el ccp-gitignores-table)))
+
 ;;;; Functions
 
 ;;;;; Public
 
+
+;;;;; Private
+
+;; (defun ccp--read-)
+
+(defun ccp--merge-files (filename files)
+  (with-temp-file filename
+    (insert (ccp--concat-files files))))
+
+(defun ccp--concat-files (files)
+  (mapconcat #'(lambda (f)
+                 (concat "#####  " (file-name-base f) " #####"
+                         "\n" (f-read-text f) "\n\n"))
+             files "\n"))
 
 ;;;;; Selections
 ;;;;; Hydras
