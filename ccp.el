@@ -124,46 +124,115 @@
     (mapc #'(lambda (el) (puthash (f-filename el) el ccp-gitignores-table))
           gifiles)))
 
-;;;###autoload
-(defun ccp-new-project (args)
-  ""
-  (interactive)
-  ;; make selections
-  (ccp-select-name)
-  (ccp-select-category)
-  (ccp-select-type)
-  ;; build
-  (ccp-setup-git)
-  (ccp-insert-templates)
-  (ccp-init-commit)
-  )
+;;;;; Project classes
 
-(defun ccp-select-gitignore ()
-  (interactive)
-  (helm :buffer "ccp gitignore"
-        :sources
-        (helm-build-sync-source "ccp-gitignores"
-          :candidates (lambda () (let ((li (hash-table-keys ccp-gitignores-table)))
-                                   (cons helm-input li)))
-          :resume t
-          :action
-          (lambda (c)
-            (ccp--merge-files "test.txt"
-                              (mapcar (lambda (el) (gethash el ccp-gitignores-table))
-                                      (helm-marked-candidates))))))
+(defclass base-project ()
+  ((name :initarg :name
+         :initform ""
+         :type string
+         :documentation "Name of the project.")
+   (license :initarg :license
+            :initform ""
+            :type string
+            :documentation "Project license.")
+   (category :initarg :category
+             :initform ""
+             :type string
+             :documentation "Primary category for the project. Determines filesystem directory it goes under.")
+   (plabels :initarg :labels
+            :initform ()
+            :type list
+            :documentation "Additional labels that describe the project type.")
+   (language :initarg :language
+             :initform ""
+             :type string
+             :documentation "Primary language of the project.")
+   (languages :initarg :languages
+              :initform ()
+              :type list
+              :documentation "Other languages used in the project.")
+   (builder :initarg :builder
+            :initform ""
+            :type string
+            :documentation "Build tool (if any) used for the project.")
+   (packaging :initarg :packaging
+              :initform ""
+              :type string
+              :documentation "Package system (if any) used for the project dependencies.")
+   (gitignore :initarg :gitingore
+              :initform ()
+              :type list
+              :documentation "List of gitignore template files used to create final gitignore file.")
+   (readme :initarg :readme
+           :initform ""
+           :type string
+           :documentation "Template to use for the readme, as a string.")
+   (sourcefile :initarg :sourcefile
+               :initform ""
+               :type string
+               :documentation "Template to use for new, empty, generic source file.")
+   (tests :initarg :tests
+          :initform ""
+          :type string
+          :documentation "Template for the testing facilities for the projects.")
+   (path :initarg :path
+         :initform ""
+         :type string
+         :documentation "Filesystem path for the project.")
+   :documentation "Base project class that defines common attributes for any software project. Most of these are optional, except for: name, category, language, path (auto-generated, it is not required to specify.)"))
+
+(defclass multi-project (base-project)
+  ((projects :initarg :projects
+             :initform ()
+             :type list
+             :documentation "List of projects that belong to the main project."))
+  :documentation "Base class for a multi-project. Only adds a list of child projects to the base-project class.")
+
+(defclass )
+
+;; (defclass docker-project (base-project)
+;;   (()))
+
+(defclass python-project (base-project)
+  ((cookiecutter :initarg :cookiecutter
+                 :initform ""
+                 :type string
+                 :documentation "Name of the cookiecutter template to use (if any).")
+   (requirements :initarg :requirements
+                 :type list
+                 :documentation "List of packages (if any) for the requirements file.")
+   (env-filename :initarg :env-filename
+                 :initform ""
+                 :type string
+                 :documentation "Filename for the environments file (if it will be used).")
+   (env-packages :initarg :env-packages
+                 :initform ()
+                 :type list
+                 :documentation "List of packages for the environments file (if any).")
+   (env-channels :initarg :env-channels
+                 :initform ()
+                 :type list
+                 :documentation "List of environment channels to poll (if used).")))
+
+;; (defclass elisp-project (base-project))
+
+;; (defclass datascience-project (python-project))
+
+;; (defclass ml-project (python-project))
 
 ;;;; Functions
-
 ;;;;; Public
-
-
 ;;;;; Private
 
-        ;; (defun ccp--read-)
+;;;; Make project
+;;;;; File utils
+(defun ccp--make-dir ()
+  "Create project directory in correct location and cd into it."
+  )
 
-        (defun ccp--merge-files (filename files)
+(defun ccp--merge-files (filename files)
           (with-temp-file filename
-            (insert (ccp--concat-files files)))))
+            (insert (ccp--concat-files files))))
 
 (defun ccp--concat-files (files)
   (mapconcat #'(lambda (f)
