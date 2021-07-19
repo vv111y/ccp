@@ -362,7 +362,17 @@ not empty."
                   (s-matches? "[^a-zA-Z1-9]" str))
         str))))
 
-;;;; Footer
+;;; Footer
+;;;; Load ccp maybe?
+
+(defun ccp-load ()
+  "Init ccp default dir and get initial templates and necessary files."
+  (if-let ((root-dir (bound-and-true-p ccp-root-dir)))
+      (message "ccp root directory: %s" root-dir)
+    (message "ccp root directory not found. Please specify variable and download necessary templates according to documentation.")
+    (setq ccp-root-dir (file-name-directory (symbol-file 'ccp-root-dir)))))
+
+(ccp-load)
 
 (provide 'ccp)
 
