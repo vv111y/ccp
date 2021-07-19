@@ -88,8 +88,10 @@
 (defvar ccp-root-dir nil "ccp directory.")
 (setq ccp-root-dir (file-name-directory (symbol-file 'ccp-root-dir)))
 
-;; (defvar ccp-gitignore-repo nil "gitignore templates directory.")
-;; (defvar ccp-gitignores-table nil "gitignore map filename to full path.")
+(defvar ccp-forms-dir nil "ccp directory to store pre-filled forms (defined project templates).")
+
+(defvar ccp-gitignore-repo nil "gitignore templates directory.")
+(defvar ccp-gitignores-table nil "gitignore map filename to full path.")
 
 
 ;;;;; Keymaps
@@ -114,8 +116,55 @@
 
 ;;;; Commands
 
+;; make selections
+;; (ccp-select-name)
+;; (ccp-select-category)
+;; (ccp-select-type)
+;; build
+;; (ccp-setup-git)
+;; (ccp-insert-templates)
+;; (ccp-init-commit)
+
 ;;;###autoload
-(defun ccp-update-templates ()
+(defun ccp-new-project (args)
+  "Open new form buffer. Filling out the form defines the new project. Once satisfied run ccp-make-project to build the initial, empty project."
+  (interactive)
+  )
+
+;;;###autoload
+(defun ccp-save-project-form (arg)
+  "If the selections define a common project that you work on, you can save these selections and load them into the form later. Only the project name will not be saved, as that is the sole identifier for all projects."
+  (interactive (list (read-file-name "Save project template: " ccp-forms-dir)))
+  )
+
+;;;###autoload
+(defun ccp-load-project-form (arg)
+  "Load a previously saved filled-out form."
+  (interactive (list (read-file-name "Load project template: " ccp-forms-dir)))
+  )
+
+;;;###autoload
+(defun ccp-make-project (arg)
+  "Make the new, empty, project. Writes the new directory and all intial files that were selected. initializes git and makes first commit of all said files."
+  (interactive)
+  )
+
+;;;###autoload
+(defun ccp-new-category (arg)
+  "Define a new category "
+  (interactive))
+
+
+;;;###autoload
+(defun ccp-select-gitignore ()
+  (interactive)
+  (setq ccp-select-gitignores
+        (completing-read-multiple
+         "add gitignore templates: " (hash-table-keys ccp-gitignores-table))))
+
+;;;###autoload
+(defun ccp-update-gitignofre-templates ()
+  "Update list of gitignore templates from the gitignore repo."
   (interactive)
   (when-let* ((gidir (concat ccp-root-dir "gitignore"))
               (f-dir? gidir)
