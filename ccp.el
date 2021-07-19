@@ -86,12 +86,36 @@
 ;;;; Variables
 
 (defvar ccp-root-dir nil "ccp directory.")
-(setq ccp-root-dir (file-name-directory (symbol-file 'ccp-root-dir)))
 
 (defvar ccp-forms-dir nil "ccp directory to store pre-filled forms (defined project templates).")
 
 (defvar ccp-gitignore-repo nil "gitignore templates directory.")
 (defvar ccp-gitignores-table nil "gitignore map filename to full path.")
+
+(cl-defstruct (ccp-spec (:constructor ccp-spec-create)
+                        (:copier nil))
+  "a single project specification. Certain allowed values maybe a specification group
+itself, thus we have recursive and heirarchical specifications.
+name - name of spec
+key - key (used by hydra)
+parent - any parent spec
+children - list of children specs
+type - primitive types, spec-group, etc
+default - default value if any
+vals - list of allowed values, if applicable
+selection - slot used to store user selection/input
+action - function that is to be applied to the project when making it.
+before - spec actions that should be before this one
+after - spec actions that should be done after this one
+Most of the slots are optional, except for name.
+Before and after slots help to organize the compositional order of the actions to be performed."
+           name key parent children type default vals selection action)
+
+;; (cl-defstruct spec-group
+;;   "a meaningful grouping of specifications. Parent points to any parent specification,
+;; specs is a list of specs, and action is any action (script) associated with this group."
+;;               parent specs action)
+
 
 
 ;;;;; Keymaps
@@ -237,8 +261,7 @@
              :documentation "List of projects that belong to the main project."))
   :documentation "Base class for a multi-project. Only adds a list of child projects to the base-project class.")
 
-(defclass )
-
+;; TODO no? perhaps these should be structs instead
 ;; (defclass docker-project (base-project)
 ;;   (()))
 
