@@ -68,20 +68,9 @@
 
 ;;;; Requirements
 
-;; (require 'foo)
 (require 'ido)
 (require 's)
 (require 'f)
-
-;;;; Customization
-
-;; (defgroup ccp nil
-;;   "Settings for `ccp'."
-;;   :link '(url-link "https://example.com/ccp.el"))
-
-;; (defcustom ccp-something nil
-;;   "This setting does something."
-;;   :type 'something)
 
 ;;;; Variables
 
@@ -89,230 +78,67 @@
 
 (defvar ccp-forms-dir nil "ccp directory to store pre-filled forms (defined project templates).")
 
-(defvar ccp-gitignore-repo nil "gitignore templates directory.")
-(defvar ccp-gitignores-table nil "gitignore map filename to full path.")
-
 (cl-defstruct (ccp-spec (:constructor ccp-spec-create)
                         (:copier nil))
-  "a single project specification. Certain allowed values maybe a specification group
-itself, thus we have recursive and heirarchical specifications.
+  "A single or group project specification. Certain specification values
+maybe a specification group itself, thus we have recursive and heirarchical specifications.
 name - name of spec
-key - key (used by hydra)
-parent - any parent spec
-children - list of children specs
+key - hotkey (used by hydra)
 type - primitive types, spec-group, etc
+description - brief description of spec
 default - default value if any
 vals - list of allowed values, if applicable
 selection - slot used to store user selection/input
-action - function that is to be applied to the project when making it.
-before - spec actions that should be before this one
-after - spec actions that should be done after this one
-Most of the slots are optional, except for name.
-Before and after slots help to organize the compositional order of the actions to be performed."
-           name key parent children type default vals selection action)
+action - function associated with this spec. Applied to the project when building.
+parent - any parent spec
+required - list of children specs that are necessary for this spec
+optional - list of optional children specs
+Required slots are: name, key, and type. The rest are optional."
+  name key type description default vals selection action parent required optional)
 
-;; (cl-defstruct spec-group
-;;   "a meaningful grouping of specifications. Parent points to any parent specification,
-;; specs is a list of specs, and action is any action (script) associated with this group."
-;;               parent specs action)
-
-
-
-;;;;; Keymaps
-
-;; This technique makes it easier and less verbose to define keymaps
-;; that have many bindings.
-
-;; (defvar ccp-map
-;;   ;; This makes it easy and much less verbose to define keys
-;;   (let ((map (make-sparse-keymap "ccp map"))
-;;         (maps (list
-;;                ;; Mappings go here, e.g.:
-;;                "RET" #'ccp-RET-command
-;;                [remap search-forward] #'ccp-search-forward
-;;                )))
-;;     (cl-loop for (key fn) on maps by #'cddr
-;;              do (progn
-;;                   (when (stringp key)
-;;                     (setq key (kbd key)))
-;;                   (define-key map key fn)))
-;;     map))
+;; (defvar ccp-default-project nil "User defined list of default components for projects.")
+;; project meta templates - predefined, partly filled ccp projects
+;; also templates - predefined material from other sources added 
 
 ;;;; Commands
 
-;; make selections
+
+;;;; Spec: manage
+
+;; TODO 1st. make spec code
+;;;###autoload
+(defmacro cpp-define-spec (short-name &keys)
+  "Define a spec. Short-name is the atomic reference to this spec used by ccp. "
+  ;; hydra entry
+  ;; ui form
+  ;; data struct
+  )
+
+
+;;;###autoload
+(defun ccp-new-project ()
+  ;; This should be a single work to uniquely identify this spec for a particular project. The rest of the keyed arguments are used for the spec struct.
+  (interactive)
+  )
+
+;;;###autoload
+(defun cpp-add-spec (spec child)
+  "Add CHILD specification to parent SPEC. CHILD is appended to the end of the OPTIONAL list."
+  ())
+
+;;;###autoload
+(defun cpp-remove-spec (spec child)
+  )
+
+
+
+;;;; UI
+;;;;; UI: Selections
+
 ;; (ccp-select-name)
 ;; (ccp-select-category)
 ;; (ccp-select-type)
-;; build
-;; (ccp-setup-git)
-;; (ccp-insert-templates)
-;; (ccp-init-commit)
 
-;;;###autoload
-(defun ccp-new-project (args)
-  "Open new form buffer. Filling out the form defines the new project. Once satisfied run ccp-make-project to build the initial, empty project."
-  (interactive)
-  )
-
-;;;###autoload
-(defun ccp-save-project-form (arg)
-  "If the selections define a common project that you work on, you can save these selections and load them into the form later. Only the project name will not be saved, as that is the sole identifier for all projects."
-  (interactive (list (read-file-name "Save project template: " ccp-forms-dir)))
-  )
-
-;;;###autoload
-(defun ccp-load-project-form (arg)
-  "Load a previously saved filled-out form."
-  (interactive (list (read-file-name "Load project template: " ccp-forms-dir)))
-  )
-
-;;;###autoload
-(defun ccp-make-project (arg)
-  "Make the new, empty, project. Writes the new directory and all intial files that were selected. initializes git and makes first commit of all said files."
-  (interactive)
-  )
-
-;;;###autoload
-(defun ccp-new-category (arg)
-  "Define a new category "
-  (interactive))
-
-
-;;;###autoload
-(defun ccp-select-gitignore ()
-  (interactive)
-  (setq ccp-select-gitignores
-        (completing-read-multiple
-         "add gitignore templates: " (hash-table-keys ccp-gitignores-table))))
-
-;;;###autoload
-(defun ccp-update-gitignofre-templates ()
-  "Update list of gitignore templates from the gitignore repo."
-  (interactive)
-  (when-let* ((gidir (concat ccp-root-dir "gitignore"))
-              (f-dir? gidir)
-              (gifiles (directory-files-recursively gidir ".gitignore" nil t)))
-    (setq ccp-gitignores-table (make-hash-table :test 'equal))
-    (mapc #'(lambda (el) (puthash (f-filename el) el ccp-gitignores-table))
-          gifiles)))
-
-;;;;; Project classes
-
-(defclass base-project ()
-  ((name :initarg :name
-         :initform ""
-         :type string
-         :documentation "Name of the project.")
-   (license :initarg :license
-            :initform ""
-            :type string
-            :documentation "Project license.")
-   (category :initarg :category
-             :initform ""
-             :type string
-             :documentation "Primary category for the project. Determines filesystem directory it goes under.")
-   (plabels :initarg :labels
-            :initform ()
-            :type list
-            :documentation "Additional labels that describe the project type.")
-   (language :initarg :language
-             :initform ""
-             :type string
-             :documentation "Primary language of the project.")
-   (languages :initarg :languages
-              :initform ()
-              :type list
-              :documentation "Other languages used in the project.")
-   (builder :initarg :builder
-            :initform ""
-            :type string
-            :documentation "Build tool (if any) used for the project.")
-   (packaging :initarg :packaging
-              :initform ""
-              :type string
-              :documentation "Package system (if any) used for the project dependencies.")
-   (gitignore :initarg :gitingore
-              :initform ()
-              :type list
-              :documentation "List of gitignore template files used to create final gitignore file.")
-   (readme :initarg :readme
-           :initform ""
-           :type string
-           :documentation "Template to use for the readme, as a string.")
-   (sourcefile :initarg :sourcefile
-               :initform ""
-               :type string
-               :documentation "Template to use for new, empty, generic source file.")
-   (tests :initarg :tests
-          :initform ""
-          :type string
-          :documentation "Template for the testing facilities for the projects.")
-   (path :initarg :path
-         :initform ""
-         :type string
-         :documentation "Filesystem path for the project.")
-   :documentation "Base project class that defines common attributes for any software project. Most of these are optional, except for: name, category, language, path (auto-generated, it is not required to specify.)"))
-
-(defclass multi-project (base-project)
-  ((projects :initarg :projects
-             :initform ()
-             :type list
-             :documentation "List of projects that belong to the main project."))
-  :documentation "Base class for a multi-project. Only adds a list of child projects to the base-project class.")
-
-;; TODO no? perhaps these should be structs instead
-;; (defclass docker-project (base-project)
-;;   (()))
-
-(defclass python-project (base-project)
-  ((cookiecutter :initarg :cookiecutter
-                 :initform ""
-                 :type string
-                 :documentation "Name of the cookiecutter template to use (if any).")
-   (requirements :initarg :requirements
-                 :type list
-                 :documentation "List of packages (if any) for the requirements file.")
-   (env-filename :initarg :env-filename
-                 :initform ""
-                 :type string
-                 :documentation "Filename for the environments file (if it will be used).")
-   (env-packages :initarg :env-packages
-                 :initform ()
-                 :type list
-                 :documentation "List of packages for the environments file (if any).")
-   (env-channels :initarg :env-channels
-                 :initform ()
-                 :type list
-                 :documentation "List of environment channels to poll (if used).")))
-
-;; (defclass elisp-project (base-project))
-
-;; (defclass datascience-project (python-project))
-
-;; (defclass ml-project (python-project))
-
-;;;; Functions
-;;;;; Public
-;;;;; Private
-
-;;;; Make project
-;;;;; File utils
-(defun ccp--make-dir ()
-  "Create project directory in correct location and cd into it."
-  )
-
-(defun ccp--merge-files (filename files)
-          (with-temp-file filename
-            (insert (ccp--concat-files files))))
-
-(defun ccp--concat-files (files)
-  (mapconcat #'(lambda (f)
-                 (concat "#####  " (file-name-base f) " #####"
-                         "\n" (f-read-text f) "\n\n"))
-             files "\n"))
-
-;;;; Selections
 ;;;;; Hydras
 
 (defhydra ccp-main-hydra (:foreign-keys warn :exit t :hint nil)
@@ -384,6 +210,58 @@ not empty."
       (unless (or (s-blank-str-p str)
                   (s-matches? "[^a-zA-Z1-9]" str))
         str))))
+
+;;;; Project: Do
+;;;;; File utils
+(defun ccp--make-dir ()
+  "Create project directory in correct location and cd into it."
+  )
+
+(defun ccp--merge-files (filename files)
+          (with-temp-file filename
+            (insert (ccp--concat-files files))))
+
+(defun ccp--concat-files (files)
+  (mapconcat #'(lambda (f)
+                 (concat "#####  " (file-name-base f) " #####"
+                         "\n" (f-read-text f) "\n\n"))
+             files "\n"))
+
+;;;;; External Templates Specs
+
+;; (ccp-insert-templates)
+
+;;;###autoload
+(defun ccp-new-project ()
+  "Open new form buffer. Filling out the form defines the new project. Once satisfied run ccp-make-project to build the initial, empty project."
+  (interactive)
+  (when (bound-and-true-p cpp-current-project)
+    (push cpp-current-project cpp-open-projects))
+  (setq cpp-current-project (cpp-new-base)))
+
+;;;###autoload
+(defun ccp-save-project-form (arg)
+  "If the selections define a common project that you work on, you can save these selections and load them into the form later. Only the project name will not be saved, as that is the sole identifier for all projects."
+  (interactive (list (read-file-name "Save project template: " ccp-forms-dir)))
+  )
+
+;;;###autoload
+(defun ccp-load-project-form (arg)
+  "Load a previously saved filled-out form."
+  (interactive (list (read-file-name "Load project template: " ccp-forms-dir)))
+  )
+
+;;;###autoload
+(defun ccp-make-project (arg)
+  "Make the new, empty, project. Writes the new directory and all intial files that were selected."
+  (interactive)
+  )
+
+;;;###autoload
+(defun ccp-new-category (arg)
+  "Define a new category "
+  (interactive))
+
 
 ;;; Footer
 ;;;; Load ccp maybe?
